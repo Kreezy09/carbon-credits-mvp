@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Upload, Camera, TreePine, Leaf, ArrowRight, ArrowLeft, CheckCircle, Loader } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Upload, Camera, TreePine, Leaf, ArrowRight, ArrowLeft, CheckCircle, Loader, Play } from 'lucide-react';
 
 interface FileUpload {
   name: string;
@@ -16,6 +16,8 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [modelCreated, setModelCreated] = useState(false);
   const [selectedSpecies, setSelectedSpecies] = useState<string>("");
+  const [typedText, setTypedText] = useState<string>("");
+  const [isTyping, setIsTyping] = useState<boolean>(false);
 
   const treeSpecies = [
     "Oak (Quercus robur)",
@@ -60,6 +62,8 @@ function App() {
     setIsProcessing(false);
     setModelCreated(false);
     setSelectedSpecies("");
+    setTypedText("");
+    setIsTyping(false);
   };
 
   const handleReferenceUpload = (
@@ -142,6 +146,28 @@ function App() {
     }, 3000);
   };
 
+  // Typing effect for Watch Demo button
+  useEffect(() => {
+    if (currentStep === 0) {
+      const text = "WATCH DEMO";
+      let index = 0;
+      setIsTyping(true);
+      setTypedText("");
+
+      const typeInterval = setInterval(() => {
+        if (index < text.length) {
+          setTypedText(text.substring(0, index + 1));
+          index++;
+        } else {
+          clearInterval(typeInterval);
+          setIsTyping(false);
+        }
+      }, 100);
+
+      return () => clearInterval(typeInterval);
+    }
+  }, [currentStep]);
+
   const ProgressBar = () => (
     <div className="w-full max-w-2xl mx-auto mb-8">
       <div className="flex justify-between items-center mb-2">
@@ -217,13 +243,29 @@ function App() {
         </ul>
       </div>
 
-      <button
-        onClick={nextStep}
-        className="bg-emerald-500 text-white px-8 py-3 rounded-lg font-medium hover:bg-emerald-600 transition-colors flex items-center gap-2 mx-auto"
-      >
-        Start Measurement
-        <ArrowRight className="w-5 h-5" />
-      </button>
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+        <button
+          onClick={nextStep}
+          className="bg-emerald-500 text-white px-8 py-3 rounded-lg font-medium hover:bg-emerald-600 transition-colors flex items-center gap-2"
+        >
+          Start Measurement
+          <ArrowRight className="w-5 h-5" />
+        </button>
+        
+        <a
+          href="https://drive.google.com/file/d/1ABC123DEF456GHI789JKL/view?usp=sharing"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="relative bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-lg font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 group animate-pulse"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg animate-ping opacity-20"></div>
+          <Play className="w-5 h-5 group-hover:scale-110 transition-transform relative z-10" />
+          <span className="relative z-10 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent font-black text-lg tracking-wide group-hover:from-yellow-200 group-hover:to-white transition-all duration-300">
+            {typedText}
+            {isTyping && <span className="animate-pulse">|</span>}
+          </span>
+        </a>
+      </div>
     </div>
   );
 
