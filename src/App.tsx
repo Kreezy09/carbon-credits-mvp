@@ -584,7 +584,7 @@ const TreeAnalysisStep = () => {
 
           <div className="mt-6 p-4 bg-emerald-500 rounded-lg text-center">
             <p className="text-white text-lg font-semibold">
-              🌍 This tree sequesters approximately 1.7 tonnes of CO₂
+              🌍 This tree sequesters approximately {carbonResults.co2e} tonnes of CO₂
             </p>
             <p className="text-emerald-100 text-sm mt-1">
               Equivalent to driving 4,200 miles in an average car
