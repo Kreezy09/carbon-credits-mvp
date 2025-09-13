@@ -5,11 +5,13 @@ interface FileUpload {
   name: string;
   size: number;
   type: string;
+  url: string;
 }
 
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [referenceUploaded, setReferenceUploaded] = useState(false);
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [treePhotos, setTreePhotos] = useState<FileUpload[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [modelCreated, setModelCreated] = useState(false);
@@ -37,32 +39,40 @@ function App() {
   const resetApp = () => {
     setCurrentStep(0);
     setReferenceUploaded(false);
+    setReferenceImage(null);
     setTreePhotos([]);
     setIsProcessing(false);
     setModelCreated(false);
   };
 
-  const handleReferenceUpload = () => {
-    setReferenceUploaded(true);
+  const handleReferenceUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setReferenceImage(url);
+      setReferenceUploaded(true);
+    }
   };
 
   const handleTreePhotosUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      const fileList: FileUpload[] = Array.from(files).map(file => ({
+      const newFiles: FileUpload[] = Array.from(files).map(file => ({
         name: file.name,
         size: file.size,
-        type: file.type
+        type: file.type,
+        url: URL.createObjectURL(file)
       }));
-      setTreePhotos(fileList);
-      
-      // Simulate processing
-      setIsProcessing(true);
-      setTimeout(() => {
-        setIsProcessing(false);
-        setModelCreated(true);
-      }, 3000);
+      setTreePhotos(prev => [...prev, ...newFiles]);
     }
+  };
+
+  const generateModel = () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      setModelCreated(true);
+    }, 3000);
   };
 
   const ProgressBar = () => (
@@ -168,8 +178,12 @@ function App() {
           </>
         ) : (
           <div>
-            <div className="w-64 h-48 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
-              <TreePine className="w-16 h-16 text-gray-400" />
+            <div className="w-64 h-48 bg-gray-200 rounded-lg mx-auto mb-4 overflow-hidden">
+              <img 
+                src={referenceImage!} 
+                alt="Reference" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="flex items-center justify-center gap-2 text-emerald-600">
               <CheckCircle className="w-5 h-5" />
@@ -221,20 +235,42 @@ function App() {
               onChange={handleTreePhotosUpload}
               className="hidden"
               id="tree-photos-upload"
+              key={treePhotos.length} // Force re-render to allow selecting same files again
             />
             <label
               htmlFor="tree-photos-upload"
               className="bg-emerald-500 text-white px-6 py-2 rounded-lg cursor-pointer hover:bg-emerald-600 transition-colors inline-block"
             >
-              Choose Files
+              {treePhotos.length === 0 ? 'Choose Files' : 'Add More Photos'}
             </label>
           </>
         ) : (
           <div>
+            <div className="mb-4">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleTreePhotosUpload}
+                className="hidden"
+                id="tree-photos-add-more"
+                key={`add-more-${treePhotos.length}`}
+              />
+              <label
+                htmlFor="tree-photos-add-more"
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-600 transition-colors inline-block text-sm"
+              >
+                Add More Photos
+              </label>
+            </div>
             <div className="grid grid-cols-4 gap-4 mb-6">
               {treePhotos.slice(0, 8).map((file, index) => (
-                <div key={index} className="w-full h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <TreePine className="w-8 h-8 text-gray-400" />
+                <div key={index} className="w-full h-20 bg-gray-200 rounded-lg overflow-hidden">
+                  <img 
+                    src={file.url} 
+                    alt={`Tree photo ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               ))}
               {treePhotos.length > 8 && (
@@ -249,6 +285,20 @@ function App() {
                 <CheckCircle className="w-5 h-5" />
                 <span className="font-medium">{treePhotos.length} photos uploaded</span>
               </div>
+              
+              {!isProcessing && !modelCreated && (
+                <div className="text-center">
+                  <button
+                    onClick={generateModel}
+                    className="bg-emerald-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-600 transition-colors"
+                  >
+                    Generate 3D Model
+                  </button>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Click when you're done uploading all photos
+                  </p>
+                </div>
+              )}
               
               {isProcessing && (
                 <div className="flex items-center justify-center gap-2 text-blue-600">
