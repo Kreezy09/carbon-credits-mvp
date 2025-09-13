@@ -15,6 +15,22 @@ function App() {
   const [treePhotos, setTreePhotos] = useState<FileUpload[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [modelCreated, setModelCreated] = useState(false);
+  const [selectedSpecies, setSelectedSpecies] = useState<string>('');
+
+  const treeSpecies = [
+    'Oak (Quercus robur)',
+    'Maple (Acer saccharum)',
+    'Pine (Pinus sylvestris)',
+    'Birch (Betula pendula)',
+    'Ash (Fraxinus excelsior)',
+    'Beech (Fagus sylvatica)',
+    'Spruce (Picea abies)',
+    'Willow (Salix alba)',
+    'Elm (Ulmus americana)',
+    'Cedar (Cedrus atlantica)',
+    'Poplar (Populus tremula)',
+    'Fir (Abies alba)'
+  ];
 
   const steps = [
     'Welcome',
@@ -43,6 +59,7 @@ function App() {
     setTreePhotos([]);
     setIsProcessing(false);
     setModelCreated(false);
+    setSelectedSpecies('');
   };
 
   const handleReferenceUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,6 +86,9 @@ function App() {
 
   const generateModel = () => {
     setIsProcessing(true);
+    // Randomly select a tree species when generating the model
+    const randomSpecies = treeSpecies[Math.floor(Math.random() * treeSpecies.length)];
+    setSelectedSpecies(randomSpecies);
     setTimeout(() => {
       setIsProcessing(false);
       setModelCreated(true);
@@ -340,6 +360,7 @@ function App() {
 
   const TreeAnalysisStep = () => {
     const metrics = [
+      { label: 'Tree Species', value: selectedSpecies, icon: '🌳' },
       { label: 'Tree Height', value: '12.3 m', icon: '📏' },
       { label: 'DBH (Diameter at Breast Height)', value: '38 cm', icon: '⭕' },
       { label: 'Estimated Volume', value: '1.25 m³', icon: '📦' },
