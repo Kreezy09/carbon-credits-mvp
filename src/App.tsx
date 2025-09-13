@@ -96,25 +96,44 @@ function App() {
     age: "",
   });
 
+  const [carbonResults, setCarbonResults] = useState({
+    biomass: "",
+    carbon: "",
+    co2e: "",
+    credits: "",
+  });
+
   const generateModel = () => {
     setIsProcessing(true);
 
-    // Randomly select a tree species
     const randomSpecies =
       treeSpecies[Math.floor(Math.random() * treeSpecies.length)];
     setSelectedSpecies(randomSpecies);
 
-    // Generate random realistic values
-    const randomHeight = (Math.random() * (30 - 5) + 5).toFixed(1); // 5–30 m
-    const randomDbh = (Math.random() * (100 - 10) + 10).toFixed(0); // 10–100 cm
-    const randomVolume = (Math.random() * (5 - 0.2) + 0.2).toFixed(2); // 0.2–5.0 m³
-    const randomAge = Math.floor(Math.random() * (80 - 5) + 5); // 5–80 years
+    const randomHeight = (Math.random() * (30 - 5) + 5).toFixed(1); // m
+    const randomDbh = (Math.random() * (100 - 10) + 10).toFixed(0); // cm
+    const randomVolume = (Math.random() * (5 - 0.2) + 0.2).toFixed(2); // m³
+    const randomAge = Math.floor(Math.random() * (80 - 5) + 5); // years
 
     setTreeMetrics({
       height: `${randomHeight} m`,
       dbh: `${randomDbh} cm`,
       volume: `${randomVolume} m³`,
       age: `${randomAge} years (est.)`,
+    });
+
+    // --- Simulated biomass & carbon calculations ---
+    const density = 700; // kg/m³, generic assumption
+    const biomass = (parseFloat(randomVolume) * density).toFixed(0); // kg
+    const carbon = (parseFloat(biomass) * 0.5).toFixed(0); // kg
+    const co2e = ((parseFloat(carbon) * 3.67) / 1000).toFixed(2); // tonnes
+    const credits = co2e; // 1 credit ≈ 1 tCO₂e
+
+    setCarbonResults({
+      biomass: `${biomass} kg`,
+      carbon: `${carbon} kg`,
+      co2e: `${co2e} tCO₂e`,
+      credits: `${credits} credits`,
     });
 
     setTimeout(() => {
@@ -500,22 +519,22 @@ const TreeAnalysisStep = () => {
     const results = [
       {
         label: "Total Biomass",
-        value: "950 kg",
+        value: carbonResults.biomass,
         description: "Above & below ground biomass",
       },
       {
         label: "Carbon Stored",
-        value: "475 kg",
+        value: carbonResults.carbon,
         description: "50% of total biomass",
       },
       {
         label: "CO₂ Equivalent",
-        value: "1.74 tCO₂e",
+        value: carbonResults.co2e,
         description: "Carbon × 3.67 conversion factor",
       },
       {
         label: "Credits Earned",
-        value: "≈ 1.7 credits",
+        value: `≈${carbonResults.credits}`,
         description: "Based on verified standards",
       },
     ];
